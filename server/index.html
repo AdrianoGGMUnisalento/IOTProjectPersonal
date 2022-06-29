@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        function startup() {
+
+            var socketExample = new WebSocket("ws://localhost:3001");
+            socketExample.onopen = function (event) {
+                socketExample.send("Text to be sent to the server!");
+            };
+            socketExample.onmessage = function (event) {
+                console.log(event.data);
+                //var myJSON = JSON.stringify(event.data);
+                document.getElementById("demo").innerHTML = event.data;
+            }
+        }
+    </script>
+</head>
+<body onload="startup();">
+<div id="demo">
+    Trial
+</div>
+</body>
+</html>
