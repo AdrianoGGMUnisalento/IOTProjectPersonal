@@ -86,6 +86,23 @@ client.on("message",function(topic, message, packet){
                 const result = await BatteryColl.insertOne(doc);
                 console.log(`${result.insertedCount} documents were inserted with the _id: ${result.insertedId}`,);
             }
+            if(topic=="unisalento/smarthome/HouseSmartElectricMeter"){
+
+                var Consumption=messageJSON.Consumption;
+                var timestamp = messageJSON.timestamp;
+                var sensor =messageJSON.sensor;
+                const ElectricMeterColl = database.collection("HouseSmartElectricMeter");
+                // create a document to be inserted
+                const doc = {
+                    Consumption: Consumption,
+                    timestamp: timestamp,
+                    sensorId: sensor,
+                    meterId:'Emeter1'
+                };
+
+                const result = await ElectricMeterColl.insertOne(doc);
+                console.log(`${result.insertedCount} documents were inserted with the _id: ${result.insertedId}`,);
+            }
         } finally {
             await client.close();
         }
