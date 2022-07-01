@@ -1,24 +1,25 @@
-// ledrest.js
-var gpio = require('rpi-gpio');
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var port = 8099;
+//const sensorLib = require('node-dht-sensor'); // include existing module called 'node-dht-sensor'
+const http = require('http')
+var mqtt=require('mqtt');
 
+/*
+First prototype of actuator conection works properly but we need to search and decide which actuator we want to use.
+ */
+var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+client.on("connect",function(){
+    console.log("connected");
+});
+client.on("error",function(error){
+    console.log("Can't connect"+error);
+});
+client.on("message",function(topic, message, packet){
+    console.log("message is "+ message);
+    console.log("topic is "+ topic);
+    var messageJSON = JSON.parse(message);
+    var On = messageJSON.on;
+    console.log("The light was turned on :"+On);
+});
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-gpio.setup(11, gpio.DIR_OUT);
-gpio.setup(13, gpio.DIR_OUT);
-gpio.setup(15, gpio.DIR_OUT);
-
-function off1() {
-    setTimeout(function() {
-        gpio.write(11, 0);
-    }, 2000);
-}
-function off2() {
-    setTimeout(function() {
-        gpio.write(13, 0);
-    }, 2000);
+var topic="unisalento/smarthome/raspberry1/actuators/leds";
+console.log("subscribing to topic "+topic);
+client.subscribe(topic); //single topic

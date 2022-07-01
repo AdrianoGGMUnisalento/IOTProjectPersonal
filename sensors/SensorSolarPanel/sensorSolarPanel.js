@@ -4,20 +4,41 @@ var mqtt=require('mqtt');
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
-function SensorSolarPanel(MaxPower,GoodWeather){
+/*
+var PowerSunnyday=[0,0,0,0,0,0,5.75,43.68,155.17,300,421.83,500,534.48,540.22,495.4,411.11,290.8,145.98,41.59,5.75,0,0,0,0];
+var PowerEfficency=[];
+for(var i=0;i<PowerSunnyday.length;i++) {
+    PowerEfficency.push(PowerSunnyday[i]/600);
+}
+*/
+
+
+function pad2(n) { return n < 10 ? '0' + n : n }
+function SensorSolarPanel(MaxPower,GoodWeather,PowerEfficency){
         this.MaxPower = MaxPower;
         this.GoodWeather = GoodWeather; //GoodWeather is a boolean good 0 bad 1
-        this.efficiency=0;
+        this.PowerEfficency=PowerEfficency;
     //methods
-    this.calculatePower=function(){
-        let power = this.MaxPower *(getRndInteger(10,75)/100);
+    this.calculatePower=function(Hour){
+        var power=0;
        if(this.GoodWeather) {
-           power = this.MaxPower*(getRndInteger(85,100)/100);
+           power = this.PowerEfficency[Hour]*this.MaxPower;
        }
-        this.efficiency=(power/this.MaxPower)*100;
-        return power;
+       else{
+           power = this.PowerEfficency[Hour]*this.MaxPower -0.15 * (getRndInteger(20,100) / 100);
+            if(power<0){
+                power=0;
+            }
+       }
+       return power;
+    }
+    this.Efficency=function(Hour){
+        return this.PowerEfficency[Hour]*100;
     }
 }
+var PowerEfficency=[0,0,0,0,0,0,0.009583333333333333,0.0728,0.25861666666666666,0.5,0.70305,0.8333333333333334,0.8908,0.9003666666666668,0.8256666666666667,   0.6851833333333334,
+    0.4846666666666667,0.2433,0.06931666666666668, 0.009583333333333333,0,0,0,0];
+console.log(PowerEfficency);
 // initialize the request
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
 client.on("connect",function(){
@@ -26,22 +47,28 @@ client.on("connect",function(){
 client.on("error",function(error){
     console.log("Can't connect"+error);
 });
+var minutes=60;
+var date = new Date();
+
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
-    var readout = new SensorSolarPanel(500,true);//
-    var power=readout.calculatePower()
-    var efficiency=readout.efficiency
-    console.log('Power: ',power.toFixed(1)+ 'W')
+    var readout = new SensorSolarPanel(500,true, PowerEfficency);//
+    var power=readout.calculatePower(date.getHours());
+    var efficiency=readout.Efficency(date.getHours());
+
+    var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    console.log('Power: ',power.toFixed(1)+ 'W');
     console.log('Pannels efficiency: ', efficiency.toFixed(1) + '%');
 
     const data = JSON.stringify({
         "sensor": "SOLAR",
-        "timestamp": 12345678,
+        "timestamp": timestamp,
         "PannelsPower": power.toFixed(1),
         "Pannelsefficiency": efficiency.toFixed(1)
 
     })
+    date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/sensorSolarPanel", data);
 
 }, 2000);

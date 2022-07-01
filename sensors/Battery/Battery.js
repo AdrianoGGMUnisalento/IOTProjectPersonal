@@ -1,8 +1,13 @@
 const http = require('http')
 var mqtt=require('mqtt');
+
+
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
+function pad2(n) { return n < 10 ? '0' + n : n }
+
+
 const PANNELPOWER=140; //140AH aprox 500WH
 var Consumption=300;
 
@@ -42,6 +47,9 @@ client.on("error",function(error){
     console.log("Can't connect"+error);
 });
 var readout = new Battery(1300.0,60,false,true);
+var minutes=1;
+var date = new Date();
+
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
@@ -49,17 +57,18 @@ setInterval(function() {
     readout.calculateBatteryStatus();
     var Charge=readout.Charge;
     var power=readout.Power;
-
+    var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
     console.log('Power: ',power.toFixed(1)+ 'A');
     console.log('Charge: ', Charge.toFixed(1) + '%');
 
     const data = JSON.stringify({
         "sensor": "Battery",
-        "timestamp": 12345678,
+        "timestamp": timestamp,
         "BatteryPower": power.toFixed(1),
         "BatteryCharge":Charge.toFixed(1)
 
     })
+    date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/SensorBattery", data);
 
 }, 2000);

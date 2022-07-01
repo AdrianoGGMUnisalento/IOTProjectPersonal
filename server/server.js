@@ -109,6 +109,7 @@ client.on("message",function(topic, message, packet){
 
     }
     pushInDb().catch(console.dir);
+
     async function pushToClient(){
         wss.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {

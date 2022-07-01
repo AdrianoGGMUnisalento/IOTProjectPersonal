@@ -1,7 +1,10 @@
 const http = require('http')
 var mqtt=require('mqtt');
 
+//Time stamp format:  the time stamp format will have 4 numbers year 2 numbers month 2 number day 2 number hour 2minutes 2 seconds  '20220701095604'
+function pad2(n) { return n < 10 ? '0' + n : n }
 //Vector with the hours of the day goes from 0-23
+
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
@@ -44,23 +47,31 @@ client.on("error",function(error){
 });
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
-var counter=0;
+//var counter=0;
+var minutes=60;
+var date = new Date();
+
+
 setInterval(function() {
     var readout = new SensorEnergyConsumption(EnergyConsumptionoverthedayAverage);//
-    if(counter>23){
+    /*if(counter>23){
         counter=0;
     }
-    var consumption=readout.calculateConsumption(counter)
-
+    */
+    var consumption=readout.calculateConsumption(date.getHours());
+    var timestamp=date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    console.log('timestamp: ',timestamp)
     console.log('Consumption: ',consumption.toFixed(4)+ 'KWh')
-    console.log('Hour: ', counter.toFixed(1) + 'H');
-    counter++;
+    console.log('Hour: ', date.getHours().toFixed(1) + 'H');
+
+
+    //counter++;
     const data = JSON.stringify({
         "sensor": "HouseSmartElectricMeter",
-        "timestamp": 12345678,
+        "timestamp": timestamp,
         "Consumption": consumption.toFixed(4)
     })
-
+    date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
 
 }, 2000);
