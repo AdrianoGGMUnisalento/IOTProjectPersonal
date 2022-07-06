@@ -22,10 +22,13 @@ function SensorSolarPanel(MaxPower,GoodWeather,PowerEfficency){
     this.calculatePower=function(Hour){
         var power=0;
        if(this.GoodWeather) {
-           power = this.PowerEfficency[Hour]*this.MaxPower;
+           power = this.PowerEfficency[Hour]*this.MaxPower-0.15 * (getRndInteger(40,100) / 100);
+           if(power<0){
+               power=0;
+           }
        }
        else{
-           power = this.PowerEfficency[Hour]*this.MaxPower -0.15 * (getRndInteger(20,100) / 100);
+           power = this.PowerEfficency[Hour]*this.MaxPower -0.20 * (getRndInteger(80,100) / 100);
             if(power<0){
                 power=0;
             }
@@ -40,20 +43,44 @@ var PowerEfficency=[0,0,0,0,0,0,0.009583333333333333,0.0728,0.25861666666666666,
     0.4846666666666667,0.2433,0.06931666666666668, 0.009583333333333333,0,0,0,0];
 console.log(PowerEfficency);
 // initialize the request
+var HostName="DemoSmartHome.azure-devices.net";
+var DeviceId="SensorSolarPanel";
+var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
+var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FSensorSolarPanel&sig=kbR3pBOt0FeaedakDgXwR2%2BPucEn9%2F9RozledGJS2xw%3D&se=1659683600";
+var username="DemoSmartHome.azure-devices.net/SensorSolarPanel/?api-version=2021-04-12";
+
+
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var azclient = mqtt.connect(broker,{clientId:"SensorSolarPanel",protocolId: 'MQTT',
+    keepalive: 10,
+    clean: false,
+    protocolVersion: 4,
+    reconnectPeriod: 1000,
+    connectTimeout: 30 * 1000,
+    rejectUnauthorized: false,
+    username:username,
+    password:sharedacces});
+
+
+azclient.on("connect",function(){
+    console.log("connected to azure");
+});
+azclient.on("error",function(error){
+    console.log("Can't connect to azure"+error);
+});
 client.on("connect",function(){
-    console.log("connected");
+    console.log("connected to broker");
 });
 client.on("error",function(error){
-    console.log("Can't connect"+error);
+    console.log("Can't connect broker"+error);
 });
-var minutes=60;
+var minutes=5;
 var date = new Date();
 
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
-    var readout = new SensorSolarPanel(500,true, PowerEfficency);//
+    var readout = new SensorSolarPanel(140,true, PowerEfficency);//
     var power=readout.calculatePower(date.getHours());
     var efficiency=readout.Efficency(date.getHours());
 
@@ -70,8 +97,8 @@ setInterval(function() {
     })
     date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/sensorSolarPanel", data);
-
-}, 2000);
+    azclient.publish("devices/SensorSolarPanel/messages/events/", data);
+}, 2000);//here time out should be 5minutes
 /*
     const options = {
 

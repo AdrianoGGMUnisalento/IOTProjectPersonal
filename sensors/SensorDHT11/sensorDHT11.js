@@ -1,4 +1,3 @@
-//const sensorLib = require('node-dht-sensor'); // include existing module called 'node-dht-sensor'
 const http = require('http')
 var mqtt=require('mqtt');
 
@@ -18,15 +17,39 @@ function getRndInteger(min, max) {
 //     process.exit(1);
 // }
 // initialize the request
-var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-client.on("connect",function(){
-    console.log("connected");
+
+var HostName="DemoSmartHome.azure-devices.net";
+var DeviceId="DHT11sensor";
+var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FDHT11sensor&sig=%2Fy7wjPzn1Wc6v7aBAyQ8k1q4x%2F%2FVzTe2UwwZi%2BE%2BQaU%3D&se=1659699285";
+var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
+var username="DemoSmartHome.azure-devices.net/DHT11sensor/?api-version=2021-04-12";
+
+var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var azclient = mqtt.connect(broker,{clientId:"DHT11sensor",protocolId: 'MQTT',
+    keepalive: 10,
+    clean: false,
+    protocolVersion: 4,
+    reconnectPeriod: 1000,
+    connectTimeout: 30 * 1000,
+    rejectUnauthorized: false,
+    username:username,
+    password:sharedacces});
+
+azclient.on("connect",function(){
+    console.log("connected to azure");
 });
-client.on("error",function(error){
-    console.log("Can't connect"+error);
+azclient.on("error",function(error){
+    console.log("Can't connect to azure"+error);
+});
+client.on("connect",function(){
+    console.log("connected to broker");
+});
+client.on("error",function(error) {
+    console.log("Can't connect broker" + error);
 });
 var minutes=1;
 var date = new Date();
+//'YYYYMMDDHHMMSS
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
@@ -39,11 +62,13 @@ setInterval(function() {
     //console.log('Humidity: ', readout.humidity.toFixed(1) + '%');
 
     const data = JSON.stringify({
-        "sensor": 'ID1',
+        "sensor": "ID1",
         "timestamp": timestamp,
         "temperature":tmp.toFixed(1)
     })
     date.setMinutes(date.getMinutes() + minutes);
-    client.publish("unisalento/smarthome/raspberry1/temperature", data);
+    client.publish("unisalento/smarthome/raspberry1/sensor/temperature", data);
+    azclient.publish("devices/DHT11sensor/messages/events/", data);
 
 }, 2000);
+

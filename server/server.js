@@ -32,7 +32,7 @@ client.on("message",function(topic, message, packet){
             await client.connect();
 
             const database = client.db("SmartHomeDB");
-            if(topic=="unisalento/smarthome/raspberry1/temperature"){
+            if(topic=="unisalento/smarthome/raspberry1/sensor/temperature"){
                 var temperature = messageJSON.temperature;
                 var timestamp = messageJSON.timestamp;
                 var sensor = messageJSON.sensor;
@@ -128,7 +128,7 @@ wss.on('connection', function connection(ws) {
     });
     ws.send('something');
 });
-
+//http part
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

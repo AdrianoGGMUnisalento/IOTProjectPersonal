@@ -36,14 +36,35 @@ function SensorEnergyConsumption(EnergyConsumptionoverthedayAverage) {//We pass 
         }
     }
 }
-
+var HostName="DemoSmartHome.azure-devices.net";
+var DeviceId="HouseSmartElectricMeter";
+var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
+var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FHouseSmartElectricMeter&sig=1cmQm854TCdKpwPfT8PQ3csoWktnSTEoC%2FkaG%2BHK1iY%3D&se=1659686564";
+var username="DemoSmartHome.azure-devices.net/HouseSmartElectricMeter/?api-version=2021-04-12";
 // initialize the request
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs02"});
+var azclient = mqtt.connect(broker,{clientId:"HouseSmartElectricMeter",protocolId: 'MQTT',
+    keepalive: 10,
+    clean: false,
+    protocolVersion: 4,
+    reconnectPeriod: 1000,
+    connectTimeout: 30 * 1000,
+    rejectUnauthorized: false,
+    username:username,
+    password:sharedacces});
+
+
+azclient.on("connect",function(){
+    console.log("connected to azure");
+});
+azclient.on("error",function(error){
+    console.log("Can't connect to azure"+error);
+});
 client.on("connect",function(){
-    console.log("connected");
+    console.log("connected to broker");
 });
 client.on("error",function(error){
-    console.log("Can't connect"+error);
+    console.log("Can't connect broker"+error);
 });
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
@@ -73,6 +94,7 @@ setInterval(function() {
     })
     date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
+    azclient.publish("devices/HouseSmartElectricMeter/messages/events/", data);
 
 }, 2000);
 

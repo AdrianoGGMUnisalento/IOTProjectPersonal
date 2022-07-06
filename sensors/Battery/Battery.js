@@ -39,12 +39,36 @@ function Battery(Capacity,initialPowerpercent,ifconnected,GoodWeather){
     }
 }
 // initialize the request
+var HostName="DemoSmartHome.azure-devices.net";
+var DeviceId="Battery";
+var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
+var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FBattery&sig=4K%2FrpW068MIvaT9ovccnx0Nh7aOGonNVm2ZwZo3efxg%3D&se=1659682224";
+var username="DemoSmartHome.azure-devices.net/Battery/?api-version=2021-04-12";
+
+
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var azclient = mqtt.connect(broker,{clientId:"Battery",protocolId: 'MQTT',
+    keepalive: 10,
+    clean: false,
+    protocolVersion: 4,
+    reconnectPeriod: 1000,
+    connectTimeout: 30 * 1000,
+    rejectUnauthorized: false,
+    username:username,
+    password:sharedacces});
+
+
+azclient.on("connect",function(){
+    console.log("connected to azure");
+});
+azclient.on("error",function(error){
+    console.log("Can't connect to azure"+error);
+});
 client.on("connect",function(){
-    console.log("connected");
+    console.log("connected to broker");
 });
 client.on("error",function(error){
-    console.log("Can't connect"+error);
+    console.log("Can't connect broker"+error);
 });
 var readout = new Battery(1300.0,60,false,true);
 var minutes=1;
@@ -70,6 +94,7 @@ setInterval(function() {
     })
     date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/SensorBattery", data);
+    azclient.publish("devices/Battery/messages/events/", data);
 
 }, 2000);
 /*
