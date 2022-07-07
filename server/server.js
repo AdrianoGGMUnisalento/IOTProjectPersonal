@@ -48,8 +48,7 @@ client.on("message",function(topic, message, packet){
             const result = await temperatureColl.insertOne(doc);
             console.log(`${result.insertedCount} documents were inserted with the _id: ${result.insertedId}`,);
             }
-            if(topic=="unisalento/smarthome/raspberry1/SolarPanel"){
-
+            if(topic=="unisalento/smarthome/raspberry1/sensorSolarPanel"){
                 var pannelsPower=messageJSON.PannelsPower;
                 var timestamp = messageJSON.timestamp;
                 var sensor =messageJSON.sensor;
@@ -76,10 +75,10 @@ client.on("message",function(topic, message, packet){
                 const BatteryColl = database.collection("Battery");
                 // create a document to be inserted
                 const doc = {
-                    BatteryPower: BatteryPower,
+                    BatteryPower: parseFloat(BatteryPower),
                     timestamp: timestamp,
                     sensorId: sensor,
-                    BatteryCharge: BatteryCharge,
+                    BatteryCharge: parseFloat(BatteryCharge),
                     batteryId: 'Battery1'
                 };
 

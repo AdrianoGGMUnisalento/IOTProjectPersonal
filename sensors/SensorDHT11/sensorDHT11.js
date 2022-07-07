@@ -47,7 +47,7 @@ client.on("connect",function(){
 client.on("error",function(error) {
     console.log("Can't connect broker" + error);
 });
-var minutes=1;
+var minutes=5;
 var date = new Date();
 //'YYYYMMDDHHMMSS
 // Automatically update sensor value every 2 seconds
@@ -64,11 +64,11 @@ setInterval(function() {
     const data = JSON.stringify({
         "sensor": "ID1",
         "timestamp": timestamp,
-        "temperature":tmp.toFixed(1)
+        "temperature":tmp.toFixed(1) //readout.temperature.toFixed(1)
     })
     date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/sensor/temperature", data);
     azclient.publish("devices/DHT11sensor/messages/events/", data);
-
+        //"unisalento/smarthome/raspberry1/actuator/led"
 }, 2000);
 

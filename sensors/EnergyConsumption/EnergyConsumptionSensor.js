@@ -69,7 +69,7 @@ client.on("error",function(error){
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 //var counter=0;
-var minutes=60;
+var minutes=5;
 var date = new Date();
 
 

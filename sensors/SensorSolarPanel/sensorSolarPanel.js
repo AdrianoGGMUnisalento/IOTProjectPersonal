@@ -80,8 +80,8 @@ var date = new Date();
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
-    var readout = new SensorSolarPanel(140,true, PowerEfficency);//
-    var power=readout.calculatePower(date.getHours());
+    var readout = new SensorSolarPanel(500,true, PowerEfficency);//
+    var power=readout.calculatePower(date.getHours())*minutes/60;
     var efficiency=readout.Efficency(date.getHours());
 
     var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());

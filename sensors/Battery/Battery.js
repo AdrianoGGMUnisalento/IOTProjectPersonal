@@ -70,8 +70,8 @@ client.on("connect",function(){
 client.on("error",function(error){
     console.log("Can't connect broker"+error);
 });
-var readout = new Battery(1300.0,60,false,true);
-var minutes=1;
+var readout = new Battery(4000.0,30,false,true);
+var minutes=5;
 var date = new Date();
 
 // Automatically update sensor value every 2 seconds
