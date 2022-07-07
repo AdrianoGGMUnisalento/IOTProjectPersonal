@@ -58,7 +58,7 @@ if __name__ == "__main__":
                                         Default is your current location determined by your IP Address""", default="")
     # parse arguments
     args = parser.parse_args()
-    region = "Bari"#args.region
+    region = "New York"#args.region
     if region:
         region = region.replace(" ", "+")
         URL += f"+{region}"
@@ -80,4 +80,4 @@ if __name__ == "__main__":
         print(f"Min temperature: {dayweather['min_temp']}°C")
 
 
-        #Temporali sparsi  ,Soleggiato, Temporale,  Per lo più soleggiato, Parzialmente nuvoloso,  Nuvoloso ,Rovesci
+        #Temporali sparsi  ,Soleggiato, Temporale,  Per lo più soleggiato, Parzialmente nuvoloso,  Nuvoloso ,Rovesci,Per lo più nuvoloso Temporali isolati
