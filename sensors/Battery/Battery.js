@@ -9,33 +9,25 @@ function pad2(n) { return n < 10 ? '0' + n : n }
 
 
 const PANNELPOWER=140; //140AH aprox 500WH
-var Consumption=300;
 
-function Battery(Capacity,initialPowerpercent,ifconnected,GoodWeather){
+var Consume=[-107.15277777777777,-56.73611111111111,-27.708333333333332,-26.944444444444443,-29.375, -25.97222222222222,-28.33489583333333,-53.06666666666666,-91.90416666666667,-43.54861111111111,
+    -42.113799857549864,-32.552777777777784,-74.39109686609685,-63.09496082621081,-90.0485933048433,-78.92024572649574,-56.43194444444444,-47.993589743589745,-56.24239672364673,-85.72720797720798,
+    -108.63553703703704,-172.1759259259259,-215.27777777777774,-141.15740740740742];
+
+function Battery(Capacity,initialPowerpercent,MaxPower){
     this.Capacity =Capacity; //1300 Ah    140 AH aprox la placa
     this.Power = (initialPowerpercent/100)*Capacity;
-    this.ifconnected=ifconnected;
-    this.GoodWeather = GoodWeather; //GoodWeather is a boolean good 0 bad 1
     this.Charge=100;
-    //methods
-    this.calculateBatteryStatus=function(){
-        if(!this.ifconnected) {
-            if (this.GoodWeather) {
-                this.Power = this.Power + (getRndInteger(85, 100) / 100)* (PANNELPOWER / this.Capacity);
-            } else {
-                this.Power = this.Power + (getRndInteger(10, 75) / 100) * (PANNELPOWER / this.Capacity);
-            }
-            this.Charge = (this.Power / this.Capacity) * 100;
-        }
-        else{
 
-            if (this.GoodWeather) {
-                this.Power = this.Power + (getRndInteger(85, 100) / 100)* (PANNELPOWER / this.Capacity)-Consumption;
-            } else {
-                this.Power = this.Power + (getRndInteger(10, 75) / 100) * (PANNELPOWER / this.Capacity)-Consumption;
-            }
-            this.Charge = (this.Power / this.MaxPower) * 100;
+    //methods
+    this.calculateBatteryStatus=function(hour){
+        var valueP=this.Power+Consume[hour]
+        if(valueP<0){
+            valueP=0;
         }
+        this.Power =valueP ;
+
+        this.Charge = (this.Power / this.Capacity) * 100;
     }
 }
 // initialize the request
@@ -70,7 +62,7 @@ client.on("connect",function(){
 client.on("error",function(error){
     console.log("Can't connect broker"+error);
 });
-var readout = new Battery(4000.0,30,false,true);
+var readout = new Battery(4000.0,100,);
 var minutes=5;
 var date = new Date();
 
@@ -78,7 +70,7 @@ var date = new Date();
 //we use a nested function (function inside another function)
 setInterval(function() {
     console.log('Power: ',readout.Power.toFixed(1)+ 'A');
-    readout.calculateBatteryStatus();
+    readout.calculateBatteryStatus(date.getHours());
     var Charge=readout.Charge;
     var power=readout.Power;
     var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());

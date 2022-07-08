@@ -9,8 +9,8 @@ var mqtt=require('mqtt');
 /*
 First prototype of actuator conection works properly but we need to search and decide which actuator we want to use.
  */
-// var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-var client = mqtt.connect("mqtt://192.168.2.237:1883");
+ var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+//var client = mqtt.connect("mqtt://192.168.2.237:1883");
 client.on("connect",function(){
     console.log("connected");
 });

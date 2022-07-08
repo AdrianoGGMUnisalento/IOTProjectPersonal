@@ -22,7 +22,7 @@ function SensorSolarPanel(MaxPower,GoodWeather,PowerEfficency){
     this.calculatePower=function(Hour){
         var power=0;
        if(this.GoodWeather) {
-           power = this.PowerEfficency[Hour]*this.MaxPower-0.15 * (getRndInteger(40,100) / 100);
+           power = this.PowerEfficency[Hour]*this.MaxPower-0.05 * (getRndInteger(0,100) / 100);
            if(power<0){
                power=0;
            }
@@ -39,9 +39,11 @@ function SensorSolarPanel(MaxPower,GoodWeather,PowerEfficency){
         return this.PowerEfficency[Hour]*100;
     }
 }
-var PowerEfficency=[0,0,0,0,0,0,0.009583333333333333,0.0728,0.25861666666666666,0.5,0.70305,0.8333333333333334,0.8908,0.9003666666666668,0.8256666666666667,   0.6851833333333334,
-    0.4846666666666667,0.2433,0.06931666666666668, 0.009583333333333333,0,0,0,0];
-console.log(PowerEfficency);
+
+var PowerEfficency=[0,0,0,0,0,0,0.103333333333333,0.1728,0.35861666666666666,0.70305,0.85634,0.8908,0.9003666666666668,0.9003666666666668,0.953324,0.9851833333333334,
+    0.8846666666666667,0.85634,0.76931666666666668, 0.409583333333333333,0.123333333333333,0,0,0];
+
+console.log(PowerEfficency.length);
 // initialize the request
 var HostName="DemoSmartHome.azure-devices.net";
 var DeviceId="SensorSolarPanel";
@@ -74,14 +76,14 @@ client.on("connect",function(){
 client.on("error",function(error){
     console.log("Can't connect broker"+error);
 });
-var minutes=5;
+var minutes=30;
 var date = new Date();
 
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
     var readout = new SensorSolarPanel(500,true, PowerEfficency);//
-    var power=readout.calculatePower(date.getHours())*minutes/60;
+    var power=readout.calculatePower(date.getHours());
     var efficiency=readout.Efficency(date.getHours());
 
     var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());

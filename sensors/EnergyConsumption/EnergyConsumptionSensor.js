@@ -11,6 +11,7 @@ function getRndInteger(min, max) {
 
 var EnergyConsumptionoverthedayAverage=[0.39,0.2,0.1,0.1,0.1,0.1,0.1,0.2,0.36,0.2,0.2,0.2,0.33,0.30,0.4,0.37,0.29,0.25,0.25,0.33,0.4,0.63,0.77,0.5];
 
+
 console.log(EnergyConsumptionoverthedayAverage.length);
 var sum=0;
 for(var i=0;i<EnergyConsumptionoverthedayAverage.length;i++) {
@@ -69,7 +70,7 @@ client.on("error",function(error){
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 //var counter=0;
-var minutes=5;
+var minutes=30;
 var date = new Date();
 
 
