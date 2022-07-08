@@ -1,0 +1,24 @@
+{
+  "@id": "dtmi:com:example:HouseSmartElectricMeter;1",
+  "@type": "Interface",
+
+  "displayName": "HouseSmartElectricMeter",
+  "contents": [
+    {
+      "@type": "Telemetry",
+      "name": "Consumption",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "timestamp",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "sensor",
+      "schema": "string"
+    }
+  ],
+  "@context": "dtmi:dtdl:context;2"
+}

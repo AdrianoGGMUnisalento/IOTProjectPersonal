@@ -1,0 +1,29 @@
+{
+  "@id": "dtmi:com:example:sensorSolarPanel;1",
+  "@type": "Interface",
+
+  "displayName": "sensorSolarPanel",
+  "contents": [
+    {
+      "@type": "Telemetry",
+      "name": "PannelsPower",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "timestamp",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "sensor",
+      "schema": "string"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "Pannelsefficiency",
+      "schema": "double"
+    }
+  ],
+  "@context": "dtmi:dtdl:context;2"
+}

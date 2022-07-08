@@ -1,19 +1,24 @@
 {
-    "@id": "dtmi:com:example:Thermostat;1",
+    "@id": "dtmi:com:example:DHT11sensor;1",
     "@type": "Interface",
-    "displayName": "Thermostat",
+
+    "displayName": "DHT11sensor",
     "contents": [
     {
         "@type": "Telemetry",
-        "name": "temp",
+        "name": "temperature",
         "schema": "double"
     },
     {
         "@type": "Property",
-        "name": "setPointTemp",
-        "writable": true,
-        "schema": "double"
-    }
-],
+        "name": "timestamp",
+        "schema": "integer"
+    },
+        {
+            "@type": "Property",
+            "name": "sensor",
+            "schema": "string"
+        }
+    ],
     "@context": "dtmi:dtdl:context;2"
 }
