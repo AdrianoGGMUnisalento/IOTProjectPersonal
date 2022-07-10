@@ -43,8 +43,8 @@ var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
 var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FHouseSmartElectricMeter&sig=1cmQm854TCdKpwPfT8PQ3csoWktnSTEoC%2FkaG%2BHK1iY%3D&se=1659686564";
 var username="DemoSmartHome.azure-devices.net/HouseSmartElectricMeter/?api-version=2021-04-12";
 // initialize the request
-//var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs02"});
-var client = mqtt.connect("mqtt://localhost:1883");
+var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs02"});
+//var client = mqtt.connect("mqtt://localhost:1883");
 
 var azclient = mqtt.connect(broker,{clientId:"HouseSmartElectricMeter",protocolId: 'MQTT',
     keepalive: 10,
@@ -111,7 +111,7 @@ setInterval(function() {
     }
     */
     var consumption=readout.calculateConsumption(date.getHours());
-    var timestamp=date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    var timestamp=date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
     console.log('timestamp: ',timestamp)
     console.log('Consumption: ',consumption.toFixed(4)+ 'KWh')
     console.log('Hour: ', date.getHours().toFixed(1) + 'H');
@@ -123,17 +123,16 @@ setInterval(function() {
         "timestamp": timestamp,
         "Consumption": consumption.toFixed(4)
     })
-    date.setMinutes(date.getMinutes() + minutes);
+
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
     azclient.publish("devices/HouseSmartElectricMeter/messages/events/", data);
 
 
 // =========== this below code is for MySql approach===============//
-    var moment = require('moment');
-    var now = moment();
 
-    myDate =  moment(now).utcOffset('+0200').format("YYYY-MM-DD HH:mm:ss");
-    console.log(myDate)
+
+    var myDate =  timestamp;
+    console.log(myDate);
 
     var sql = "INSERT INTO electricMeter (timestamp,sensor,Consumption ) VALUES (?,?,?)";
     con.query(sql, [myDate, "HouseSmartElectricMeter" ,consumption], function (err, result) {
@@ -151,7 +150,7 @@ setInterval(function() {
     data_grf = data_grf.replace(regex2, '$1')
     console.log(data_grf)
     client.publish("unisalento/smarthome/raspberry1/grafana/sensor/HouseSmartElectricMeter", data_grf);
-
+    date.setMinutes(date.getMinutes() + minutes);
 // ==================================================================//
 
 }, 2000);

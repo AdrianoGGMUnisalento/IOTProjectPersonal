@@ -38,8 +38,8 @@ var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevi
 var username="DemoSmartHome.azure-devices.net/Battery/?api-version=2021-04-12";
 
 
-//var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-var client = mqtt.connect("mqtt://localhost:1883");
+var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+//var client = mqtt.connect("mqtt://localhost:1883");
 
 var azclient = mqtt.connect(broker,{clientId:"Battery",protocolId: 'MQTT',
     keepalive: 10,
@@ -65,13 +65,14 @@ client.on("error",function(error){
     console.log("Can't connect broker"+error);
 });
 var readout = new Battery(4000.0,100,);
-var minutes=5;
+var minutes=60;
 var date = new Date();
 
 // =========== this below code is for MySql approach===============//
 var mysql = require('mysql');
 const fs = require('fs');
-const moment = require("moment");
+
+
 var con = mysql.createConnection({
     host: "mysql-idalab.mysql.database.azure.com",
     user: "idalabsqluser",
@@ -111,7 +112,7 @@ setInterval(function() {
     readout.calculateBatteryStatus(date.getHours());
     var Charge=readout.Charge;
     var power=readout.Power;
-    var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    var timestamp = date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
     console.log('Power: ',power.toFixed(1)+ 'A');
     console.log('Charge: ', Charge.toFixed(1) + '%');
 
@@ -122,16 +123,14 @@ setInterval(function() {
         "BatteryCharge":Charge.toFixed(1)
 
     })
-    date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/SensorBattery", data);
     azclient.publish("devices/Battery/messages/events/", data);
 
 
     // =========== this below code is for MySql approach===============//
-    var moment = require('moment');
-    var now = moment();
 
-    myDate =  moment(now).utcOffset('+0200').format("YYYY-MM-DD HH:mm:ss");
+
+    var myDate =  timestamp;
     console.log(myDate)
     var pwr = power.toFixed(1);
     var chg = Charge.toFixed(1)
@@ -170,7 +169,7 @@ setInterval(function() {
     console.log(data_grf_efc)
     client.publish("unisalento/smarthome/raspberry1/grafana/sensor/battery/efc", data_grf_efc);
 // ==================================================================//
-
+    date.setMinutes(date.getMinutes() + minutes);
 }, 2000);
 /*
     const options = {

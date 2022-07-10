@@ -52,8 +52,8 @@ var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevi
 var username="DemoSmartHome.azure-devices.net/SensorSolarPanel/?api-version=2021-04-12";
 
 
-//var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-var client = mqtt.connect("mqtt://localhost:1883");
+var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+//var client = mqtt.connect("mqtt://localhost:1883");
 
 var azclient = mqtt.connect(broker,{clientId:"SensorSolarPanel",protocolId: 'MQTT',
     keepalive: 10,
@@ -84,7 +84,7 @@ var date = new Date();
 // =========== this below code is for MySql approach===============//
 var mysql = require('mysql');
 const fs = require('fs');
-const moment = require("moment");
+
 var con = mysql.createConnection({
     host: "mysql-idalab.mysql.database.azure.com",
     user: "idalabsqluser",
@@ -125,7 +125,7 @@ setInterval(function() {
     var power=readout.calculatePower(date.getHours());
     var efficiency=readout.Efficency(date.getHours());
 
-    var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    var timestamp = date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
     console.log('Power: ',power.toFixed(1)+ 'W');
     console.log('Pannels efficiency: ', efficiency.toFixed(1) + '%');
 
@@ -136,15 +136,14 @@ setInterval(function() {
         "Pannelsefficiency": efficiency.toFixed(1)
 
     })
-    date.setMinutes(date.getMinutes() + minutes);
+
     client.publish("unisalento/smarthome/raspberry1/sensorSolarPanel", data);
     azclient.publish("devices/SensorSolarPanel/messages/events/", data);
 
 // =========== this below code is for MySql approach===============//
-    var moment = require('moment');
-    var now = moment();
 
-    myDate =  moment(now).utcOffset('+0200').format("YYYY-MM-DD HH:mm:ss");
+
+    var myDate =  timestamp;
     console.log(myDate)
     var pwr = power.toFixed(1);
     var efc = efficiency.toFixed(1)
@@ -181,7 +180,7 @@ setInterval(function() {
     console.log(data_grf_efc)
     client.publish("unisalento/smarthome/raspberry1/grafana/sensor/solar/efc", data_grf_efc);
 // ==================================================================//
-
+    date.setMinutes(date.getMinutes() + minutes);
 }, 2000);//here time out should be 5minutes
 /*
     const options = {

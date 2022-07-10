@@ -24,8 +24,8 @@ var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevi
 var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
 var username="DemoSmartHome.azure-devices.net/DHT11sensor/?api-version=2021-04-12";
 
-//var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-var client = mqtt.connect("mqtt://localhost:1883");
+var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+//var client = mqtt.connect("mqtt://localhost:1883");
 var azclient = mqtt.connect(broker,{clientId:"DHT11sensor",protocolId: 'MQTT',
     keepalive: 10,
     clean: false,
@@ -85,7 +85,7 @@ con.connect(function(err) {
 
 setInterval(function() {
     //var readout = sensorLib.read();
-    var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
+    var timestamp =  date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
     console.log('timestamp: ',timestamp);
     tmp=28+ 4 * (getRndInteger(10, 80) / 100) - 4 * (getRndInteger(10, 80) / 100);
     console.log('Temperature:', tmp.toFixed(1) + 'C');
@@ -109,11 +109,9 @@ setInterval(function() {
 
 // ==================================================================//
 // =========== this below code is for MySql approach===============//
-    var moment = require('moment');
-    var now = moment();
 
-    myDate =  moment(now).utcOffset('+0200').format("YYYY-MM-DD HH:mm:ss");
-    console.log(myDate)
+    var myDate =  timestamp;
+    console.log(myDate);
 
     var sql = "INSERT INTO sensordth11 (timestamp,sensor,temperature ) VALUES (?,?,?)";
         con.query(sql, [myDate, "Sensor-1" ,tmp], function (err, result) {
