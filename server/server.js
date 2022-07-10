@@ -7,7 +7,7 @@ var mqtt=require('mqtt');
 const MongoClient = mongodb.MongoClient;
 const app = express();
 const uri = 'mongodb://localhost/';
-
+//const uri = 'mongodb://smartbuilding-idalab:zKYrgALMn8ePAd3AxYLRDuRWVpxUP3RdzXfwVjwVKfKp3FWtnHXeKXktjoGekEnOYBYkt0nihux8uJ02LKySqw%3D%3D@smartbuilding-idalab.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&maxIdleTimeMS=120000&appName=@smartbuilding-idalab@';
 const wss = new WebSocket.Server({ port: 3001 });
 
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs012"});

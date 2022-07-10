@@ -24,7 +24,8 @@ var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevi
 var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
 var username="DemoSmartHome.azure-devices.net/DHT11sensor/?api-version=2021-04-12";
 
-var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+//var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var client = mqtt.connect("mqtt://localhost:1883");
 var azclient = mqtt.connect(broker,{clientId:"DHT11sensor",protocolId: 'MQTT',
     keepalive: 10,
     clean: false,
@@ -52,6 +53,34 @@ var date = new Date();
 //'YYYYMMDDHHMMSS
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
+
+// =========== this below code is for MySql approach===============//
+var mysql = require('mysql');
+var con = mysql.createConnection({
+    host: "192.168.2.237",
+    user: "sqluser",
+    password: "password",
+    database : "grafana"
+})
+
+
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    con.query("CREATE DATABASE IF NOT EXISTS grafana", function (err, result) {
+        if (err) throw err;
+        console.log("Database created or already exists");
+    });
+    var sql = "CREATE TABLE IF NOT EXISTS sensordth11 (timestamp  TIMESTAMP, sensor VARCHAR(255), temperature DECIMAL (3,1))";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("Table created");
+
+    });
+});
+
+// =========== End of code for MySql approach===============//
+
 setInterval(function() {
     //var readout = sensorLib.read();
     var timestamp = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds());
@@ -66,8 +95,36 @@ setInterval(function() {
         "timestamp": timestamp,
         "temperature":tmp.toFixed(1) //readout.temperature.toFixed(1)
     })
+
+
+// ============this below code is for mqtt dashboard ==========//
+    var data_grf = JSON.stringify({
+        "temperature":tmp.toFixed(1) //readout.temperature.toFixed(1)
+    })
+    const regex2 = /"(-?[0-9]+\.{0,1}[0-9]*)"/g
+    data_grf = data_grf.replace(regex2, '$1')
+    client.publish("unisalento/smarthome/raspberry1/grafana/sensor/temperature", data_grf);
+
+// ==================================================================//
+// =========== this below code is for MySql approach===============//
+    var moment = require('moment');
+    var now = moment();
+
+    myDate =  moment(now).utcOffset('+0200').format("YYYY-MM-DD HH:mm:ss");
+    console.log(myDate)
+
+    var sql = "INSERT INTO sensordth11 (timestamp,sensor,temperature ) VALUES (?,?,?)";
+        con.query(sql, [myDate, "Sensor-1" ,tmp], function (err, result) {
+            if (err) throw err;
+            console.log("1 record inserted");
+        });
+
+//======================================================================//
+
+
     date.setMinutes(date.getMinutes() + minutes);
     client.publish("unisalento/smarthome/raspberry1/sensor/temperature", data);
+
     azclient.publish("devices/DHT11sensor/messages/events/", data);
         //"unisalento/smarthome/raspberry1/actuator/led"
 }, 2000);
