@@ -56,13 +56,15 @@ var date = new Date();
 
 // =========== this below code is for MySql approach===============//
 var mysql = require('mysql');
+const fs = require("fs");
 var con = mysql.createConnection({
-    host: "192.168.2.237",
-    user: "sqluser",
-    password: "password",
-    database : "grafana"
+    host: "mysql-idalab.mysql.database.azure.com",
+    user: "idalabsqluser",
+    password: "QmluZ28uMzIx",
+    port: 3306,
+    database : "grafana",
+    ssl: {ca: fs.readFileSync("../../mysql-ssl/DigiCertGlobalRootCA.crt.pem")}
 })
-
 
 con.connect(function(err) {
     if (err) throw err;
