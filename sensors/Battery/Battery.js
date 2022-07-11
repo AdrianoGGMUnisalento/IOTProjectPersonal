@@ -79,7 +79,7 @@ var con = mysql.createConnection({
     password: "QmluZ28uMzIx",
     port: 3306,
     database : "grafana",
-    ssl: {ca: fs.readFileSync("../../mysql-ssl/DigiCertGlobalRootCA.crt.pem")}
+    ssl: {ca: fs.readFileSync("../DigiCertGlobalRootCA.crt.pem")}
 })
 
 
