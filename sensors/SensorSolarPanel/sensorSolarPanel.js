@@ -78,7 +78,7 @@ client.on("connect",function(){
 client.on("error",function(error){
     console.log("Can't connect broker"+error);
 });
-var minutes=30;
+var minutes=60;
 var date = new Date();
 
 // =========== this below code is for MySql approach===============//

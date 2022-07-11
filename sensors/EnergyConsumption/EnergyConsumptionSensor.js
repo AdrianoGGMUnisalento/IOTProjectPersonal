@@ -72,7 +72,7 @@ client.on("error",function(error){
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 //var counter=0;
-var minutes=30;
+var minutes=60;
 var date = new Date();
 // =========== this below code is for MySql approach===============//
 var mysql = require('mysql');
