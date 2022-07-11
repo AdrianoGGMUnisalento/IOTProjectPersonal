@@ -1,3 +1,4 @@
+import numpy as np
 from paho.mqtt import client as mqtt
 import requests
 from bs4 import BeautifulSoup
@@ -145,19 +146,119 @@ def obtainpredictions():
     host="mysql-idalab.mysql.database.azure.com"
     username="idalabsqluser"
     db_name = "grafana"
-    ca_cert="../mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+    ca_cert="../DigiCertGlobalRootCA.crt.pem"
     client = create_server_connection(host, username, pw)
 
     cdbconnection=create_db_connection(host,username,pw,db_name,ca_cert)
-    q1="""select * from solar;
-    """
-    results=read_query( cdbconnection,q1)
+    dictio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
+                      13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+    y= []
 
-    for r in results:
-        print(r)
+    t=[]
+    for i in range(0, 24):
+        q1 = """SELECT PannelsPower FROM grafana.solar where HOUR(timestamp) =""" + str(i)
+        f = dictio.get(i)
+        results = read_query(cdbconnection, q1)
+        for j in results:
+            t.append(float(j[0]))
+        f.append(t)
+        t=[]
+    print(dictio)
+
+    dictavgPannels = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
+                      13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+    #aqui bucle for que vaya iterando por los vectores y haciendo el average de np
+    for i in range(0,24):
+        v = dictavgPannels.get(i)
+        v.append(np.average(dictio[i]))
+    print("AVGENERGYPRODUCED:" + str(dictavgPannels))
+
+
+    dictio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [], 13: [],
+              14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+    t = []
+    for i in range(0, 24):
+        q2 = """SELECT Consumption FROM grafana.electricmeter where HOUR(timestamp) =""" + str(i)
+        v = dictio.get(i)
+        results = read_query(cdbconnection, q2)
+        for j in results:
+            t.append(float(j[0])*1000)
+        v.append(t)
+        t = []
+
+    dictavgEmeter = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
+                      13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+
+    # aqui bucle for que vaya iterando por los vectores y haciendo el average de np
+    for i in range(0, 24):
+        v = dictavgEmeter.get(i)
+        v.append(np.average(dictio[i]))
+    print("AVGENERGYCONSUMED:" +str(dictavgEmeter))
+
+    q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery where timestamp= (SELECT MAX(timestamp) FROM grafana.battery)"""
+    results = read_query(cdbconnection, q3)
+    print("Last battery charge"+str(results))
+
+    WeatherFactor = 0
+    if "Soleggiato" in data['weather_now'] or "soleggiato" in data['weather_now']:
+        print("sunny applying 1 factor")
+        WeatherFactor=1
+    if "Nuvoloso" in data['weather_now'] or "nuvoloso" in data['weather_now'] or "nuvolosità" in data['weather_now']:
+        print("cloudy applying 0.40 factor")
+        WeatherFactor = 0.4
+    if "Temporali"in data['weather_now'] or "temporali"in data['weather_now'] or "Temporale" in data['weather_now'] \
+            or"temporale"in data['weather_now'] or "Rovesci"in data['weather_now'] or "rovesci" in data['weather_now'] or 'pioggia' in data['weather_now'] or 'Pioggia' in data['weather_now']:
+        print("raining applying 0.15 factor")
+        WeatherFactor = 0.15
+
+    predictionbat = []
+
+    prediction = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
+                  13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+
+
+    # REVISION
+    voltaje = 3.6
+    maxCAP = 4000
+    hora=int(results[0][1])
+    op = float(results[0][0])
+    for i in range(hora, hora + 24):
+        op += (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0]) / voltaje  # We are calculating in voltajes
+        predictionbat.append(op)
+    print("Expected PredBattery from this hour"+str(predictionbat))
 
 
 
+    for i in range(0, 24):
+        pr = prediction.get(i % 24)
+        g = (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0] )/ voltaje  # We are calculating in voltajes
+        pr.append(g)
+    print("Expected Consumption: " + str(prediction))
+
+    Lights = "Off"
+    TurnonTurnoffinterval = [0,23]  # So if the hours are in this interval it will turn on for try purposes we are letting it as 12 23
+    # if Battery % >20 && TurnonTurnoff Lights ON
+    if (predictionbat[4] / maxCAP) > 0.1 and hora >= TurnonTurnoffinterval[0] and hora <= TurnonTurnoffinterval[1]:
+        Lights = "On"
+
+    q4 = """SELECT temperature,HOUR(timestamp) FROM grafana.sensordht11 where timestamp= (SELECT MAX(timestamp) FROM grafana.sensordht11)"""
+    results = read_query(cdbconnection, q3)
+    temp = float(results[0][0])
+    hora = int(results[0][1])
+    print("TEMP"+str(results))
+    if  temp<12:
+        Temp="The house has a cold temperature we suggest to put the heating if you are at home:"+str(temp)
+    if  temp >=34 and temp<42:
+        Temp="The house has an very high temperature we reccomend to put the AC: "+str(temp)
+    if temp >= 34 and temp < 42:
+        Temp = " ALERT: The house has an anormally high temperature mind about a possible fire:"+str(temp)
+    msg = {"light": Lights}
+
+
+
+    recomendation = ["Prediction consumption"+str(prediction),"Prediction battery"+str(predictionbat),"Temperature"+str(Temp)]
+    ms = [msg, recomendation]
+    return ms
 
 
 mqtt.Client.connected_flag=False#create flag in class
@@ -169,8 +270,9 @@ print("Connecting to broker ",broker)
 client.connect(broker)      #connect to broker
 while not client.connected_flag: #wait in loop
     msg=obtainpredictions()
-    #print(msg[0])
-    #client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg[0]) )
+    print(msg[0])
+    print(msg[1])
+    client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg[0]) )
     time.sleep(60)
 print("in Main Loop")
 client.loop_stop()    #Stop loop
