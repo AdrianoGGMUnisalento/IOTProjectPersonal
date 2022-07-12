@@ -74,7 +74,8 @@ client.on("error",function(error){
 //var counter=0;
 var minutes=60;
 var date = new Date();
-// =========== this below code is for MySql approach===============//
+
+
 
 
 // =========== End of code for MySql approach===============//
@@ -101,6 +102,10 @@ setInterval(function() {
 
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
     azclient.publish("devices/HouseSmartElectricMeter/messages/events/", data);
+
+
+// =========== this below code is for MySql approach===============//
+
     date.setMinutes(date.getMinutes() + minutes);
 // ==================================================================//
 

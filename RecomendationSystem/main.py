@@ -105,7 +105,7 @@ def obtainpredictions():
                 user=user_name,
                 passwd=user_password
             )
-            print("MySQL Database connection successful")
+            print("MySQL Database with server connection successful")
         except Error as err:
             print(f"Error: '{err}'")
 
@@ -126,9 +126,12 @@ def obtainpredictions():
     def execute_query(connection, query,records):
         cursor = connection.cursor()
         try:
+
+            cursor.execute('''CREATE TABLE IF NOT EXISTS grafana.recommendations (ConsumptionPrediction VARCHAR(512),PredictionBatery VARCHAR(255),Temperaturealert VARCHAR(255),EfficienceAlert VARCHAR(255))
+    ''')
             cursor.executemany(query,records)
             connection.commit()
-            print("Query successful")
+            print("Query INSERTING PREDICTIONS")
         except Error as err:
             print(f"Error: '{err}'")
 
@@ -219,9 +222,10 @@ def obtainpredictions():
 
     predictionbat = []
 
-    prediction = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
-                  13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
+    prediction = []
 
+    #{0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
+     #13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
 
     # REVISION
     #SUBSTRACTING THE AVG PANNEL & AVG CONSUMPTION TO WHITH BATTERY TO BATTERY PREDICTION:
@@ -241,9 +245,9 @@ def obtainpredictions():
 
     #PREDICTION OF THE AMOUNT ENERGY WE ARE PRODUCING/CONSUMING PER HOUR
     for i in range(0, 24):
-        pr = prediction.get(i % 24)
+
         g = (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0] )/ voltaje  # We are calculating in voltajes
-        pr.append(g)
+        prediction.append(g)
     print("Expected Consumption: " + str(prediction))
 
     Lights = "Off"
@@ -263,7 +267,7 @@ def obtainpredictions():
 
 
     #TEMPERATURE RECOMENDATION IF THE TEMP ITS IN ONE OF THE 3 INTERVALS GENERATES A RECOMENDATION.
-    q4 = """SELECT temperature,HOUR(timestamp) FROM grafana.sensordht11 where timestamp= (SELECT MAX(timestamp) FROM grafana.sensordht11)"""
+    q4 = """SELECT temperature,HOUR(timestamp) FROM grafana.sensordth11 where timestamp= (SELECT MAX(timestamp) FROM grafana.sensordth11)"""
     results = read_query(cdbconnection, q4)
     temp = float(results[0][0])
     Temp = None
@@ -281,15 +285,15 @@ def obtainpredictions():
 
 
 
-    recomendation = [(prediction,predictionbat[0:5],Temp,efficience)]
-    ms = [msg, recomendation]
+    recomendation = [(str(prediction),str(predictionbat[0:5]),Temp,efficience)]
 
-    query="""INSERT INTO grafana.recommendations (Id, Name, Price, Purchase_date) 
+    print("EL TAMANO  ES DE :"+str(len(str(prediction))))
+    query="""INSERT INTO grafana.recommendations (ConsumptionPrediction,PredictionBatery,Temperaturealert,EfficienceAlert) 
                                VALUES 
                                (%s, %s, %s, %s) """
     execute_query(cdbconnection, query,recomendation)
 
-    return ms
+    return msg
 
 
 
@@ -307,9 +311,7 @@ print("Connecting to broker ",broker)
 client.connect(broker)      #connect to broker
 while not client.connected_flag: #wait in loop
     msg=obtainpredictions() #obtains the predictions with the function above
-    print(msg[0])
-    print(msg[1])
-    client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg[0]) )
+    client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg) )
     time.sleep(60)
 print("in Main Loop")
 client.loop_stop()    #Stop loop

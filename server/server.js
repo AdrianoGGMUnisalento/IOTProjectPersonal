@@ -35,7 +35,7 @@ client.on("message",function(topic, message, packet){
 
     async function pushInDb(){
 
-        var con = mysql.createConnection({
+         var con = mysql.createConnection({
             host: "mysql-idalab.mysql.database.azure.com",
             user: "idalabsqluser",
             password: "QmluZ28uMzIx",
@@ -43,12 +43,36 @@ client.on("message",function(topic, message, packet){
             database : "grafana",
             ssl: {ca: fs.readFileSync("../DigiCertGlobalRootCA.crt.pem")}
         })
-        con.connect(function(err) {
+             con.connect(function(err) {
             if (err) {
                 console.log("!!! Cannot connect to MySQLDB !!! Error:");
                 throw err;
             }
             console.log("Connected to MySQLDB!");
+
+            var sql = "CREATE TABLE IF NOT EXISTS sensordth11 (timestamp  TIMESTAMP, sensor VARCHAR(255), temperature DECIMAL (3,1))";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+
+            });
+
+            var sql = "CREATE TABLE IF NOT EXISTS electricMeter (timestamp  TIMESTAMP, sensor VARCHAR(255), Consumption DECIMAL (5,4))";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+
+            });
+
+            var sql = "CREATE TABLE IF NOT EXISTS solar (timestamp  TIMESTAMP, sensor VARCHAR(255), PannelsPower DECIMAL (5,2), Pannelsefficiency DECIMAL (5,2))";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+
+            });
+
+            var sql = "CREATE TABLE IF NOT EXISTS battery (timestamp  TIMESTAMP, sensor VARCHAR(255), BatteryPower DECIMAL (5,1), BatteryCharge DECIMAL (3,1))";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+
+            });
 
         });
 
@@ -127,7 +151,7 @@ client.on("message",function(topic, message, packet){
                     console.log("1 record inserted");
                 });  }
         } finally {
-            await con.end();
+            //await con.end();
         }
 
     }
