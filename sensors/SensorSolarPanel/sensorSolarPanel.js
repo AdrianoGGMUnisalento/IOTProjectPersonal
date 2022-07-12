@@ -82,36 +82,7 @@ var minutes=60;
 var date = new Date();
 
 // =========== this below code is for MySql approach===============//
-var mysql = require('mysql');
-const fs = require('fs');
 
-var con = mysql.createConnection({
-    host: "mysql-idalab.mysql.database.azure.com",
-    user: "idalabsqluser",
-    password: "QmluZ28uMzIx",
-    port: 3306,
-    database : "grafana",
-    ssl: {ca: fs.readFileSync("../DigiCertGlobalRootCA.crt.pem")}
-})
-
-
-con.connect(function(err) {
-    if (err) {
-        console.log("!!! Cannot connect !!! Error:");
-        throw err;
-    }
-    console.log("Connected!");
-    con.query("CREATE DATABASE IF NOT EXISTS grafana", function (err, result) {
-        if (err) throw err;
-        console.log("Database created or already exists");
-    });
-    var sql = "CREATE TABLE IF NOT EXISTS solar (timestamp  TIMESTAMP, sensor VARCHAR(255), PannelsPower DECIMAL (5,2), Pannelsefficiency DECIMAL (5,2))";
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Table created");
-
-    });
-});
 
 // =========== End of code for MySql approach===============//
 
@@ -140,45 +111,11 @@ setInterval(function() {
     client.publish("unisalento/smarthome/raspberry1/sensorSolarPanel", data);
     azclient.publish("devices/SensorSolarPanel/messages/events/", data);
 
-// =========== this below code is for MySql approach===============//
 
 
-    var myDate =  timestamp;
-    console.log(myDate)
-    var pwr = power.toFixed(1);
-    var efc = efficiency.toFixed(1)
-    console.log("power is: ",pwr)
-    console.log("efficency is: ",efc)
-
-
-
-    var sql = "INSERT INTO solar (timestamp,sensor,PannelsPower,Pannelsefficiency  ) VALUES (?,?,?,?)";
-    con.query(sql, [myDate, "SOLAR" ,pwr,efc], function (err, result) {
-        if (err) throw err;
-        console.log("1 record inserted");
-    });
 
 //======================================================================//
 
-
-    // ============this below code is for mqtt dashboard ==========//
-    var data_grf_pwr = JSON.stringify({
-        "Pannel Power":power.toFixed(1) //readout.temperature.toFixed(1)
-
-    })
-    const regex1 = /"(-?[0-9]+\.{0,1}[0-9]*)"/g
-    data_grf_pwr = data_grf_pwr.replace(regex1, '$1')
-    console.log(data_grf_pwr)
-    client.publish("unisalento/smarthome/raspberry1/grafana/sensor/solar/power", data_grf_pwr);
-
-    var data_grf_efc = JSON.stringify({
-        "Pannel Efficiency":efficiency.toFixed(1) //readout.temperature.toFixed(1)
-
-    })
-    const regex2 = /"(-?[0-9]+\.{0,1}[0-9]*)"/g
-    data_grf_efc = data_grf_efc.replace(regex2, '$1')
-    console.log(data_grf_efc)
-    client.publish("unisalento/smarthome/raspberry1/grafana/sensor/solar/efc", data_grf_efc);
 // ==================================================================//
     date.setMinutes(date.getMinutes() + minutes);
 }, 2000);//here time out should be 5minutes

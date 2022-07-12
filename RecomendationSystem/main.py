@@ -123,10 +123,10 @@ def obtainpredictions():
 
         return connection
 
-    def execute_query(connection, query):
+    def execute_query(connection, query,records):
         cursor = connection.cursor()
         try:
-            cursor.execute(query)
+            cursor.executemany(query,records)
             connection.commit()
             print("Query successful")
         except Error as err:
@@ -167,7 +167,7 @@ def obtainpredictions():
 
     dictavgPannels = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
                       13: [], 14: [], 15: [], 16: [], 17: [], 18: [], 19: [], 20: [], 21: [], 22: [], 23: []}
-    #aqui bucle for que vaya iterando por los vectores y haciendo el average de np
+
     for i in range(0,24):
         v = dictavgPannels.get(i)
         v.append(np.average(dictio[i]))
@@ -195,10 +195,16 @@ def obtainpredictions():
         v.append(np.average(dictio[i]))
     print("AVGENERGYCONSUMED:" +str(dictavgEmeter))
 
+
+    #Because of linear regression wasn't behaving well with hours as variable we decided to create the functions from the average
+
+
     q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery where timestamp= (SELECT MAX(timestamp) FROM grafana.battery)"""
     results = read_query(cdbconnection, q3)
     print("Last battery charge"+str(results))
 
+    #We have to give it manually the wheights one important thing should be store the day weather in orther to future modelization
+    #So we can obtain the true values of the weather
     WeatherFactor = 0
     if "Soleggiato" in data['weather_now'] or "soleggiato" in data['weather_now']:
         print("sunny applying 1 factor")
@@ -218,17 +224,22 @@ def obtainpredictions():
 
 
     # REVISION
+    #SUBSTRACTING THE AVG PANNEL & AVG CONSUMPTION TO WHITH BATTERY TO BATTERY PREDICTION:
     voltaje = 3.6
     maxCAP = 4000
     hora=int(results[0][1])
     op = float(results[0][0])
+    # PREDICTION OF BATTERY STATUS IN THE NEXT 24 HOUR
+
     for i in range(hora, hora + 24):
         op += (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0]) / voltaje  # We are calculating in voltajes
+        if op==0 :
+            op=0
         predictionbat.append(op)
     print("Expected PredBattery from this hour"+str(predictionbat))
 
 
-
+    #PREDICTION OF THE AMOUNT ENERGY WE ARE PRODUCING/CONSUMING PER HOUR
     for i in range(0, 24):
         pr = prediction.get(i % 24)
         g = (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0] )/ voltaje  # We are calculating in voltajes
@@ -241,24 +252,50 @@ def obtainpredictions():
     if (predictionbat[4] / maxCAP) > 0.1 and hora >= TurnonTurnoffinterval[0] and hora <= TurnonTurnoffinterval[1]:
         Lights = "On"
 
+    # SOLAR PANEL RECOMENDATION IF SOLAR PANNEL EFFICENCY <40 && SUNNY DAY GENERATES AN ALERT OF CLEANNING/BROKEN PANNEL
+    q5 = """SELECT Pannelsefficiency,HOUR(timestamp) FROM grafana.solar where timestamp= (SELECT MAX(timestamp) FROM grafana.solar)"""
+    results = read_query(cdbconnection, q5)
+    efficiency = float(results[0][0])
+    hour=float(results[0][1])
+    efficience=None
+    if  efficiency< 65 and WeatherFactor==1 and hour<=17 and hour>=10:
+        efficience="You need to check your solar Pannels its sunny and the efficiency its don the 65%"
+
+
+    #TEMPERATURE RECOMENDATION IF THE TEMP ITS IN ONE OF THE 3 INTERVALS GENERATES A RECOMENDATION.
     q4 = """SELECT temperature,HOUR(timestamp) FROM grafana.sensordht11 where timestamp= (SELECT MAX(timestamp) FROM grafana.sensordht11)"""
-    results = read_query(cdbconnection, q3)
+    results = read_query(cdbconnection, q4)
     temp = float(results[0][0])
-    hora = int(results[0][1])
+    Temp = None
     print("TEMP"+str(results))
     if  temp<12:
-        Temp="The house has a cold temperature we suggest to put the heating if you are at home:"+str(temp)
+        Temp="TemperatureThe house has a cold temperature we suggest to put the heating if you are at home:"+str(temp)
     if  temp >=34 and temp<42:
-        Temp="The house has an very high temperature we reccomend to put the AC: "+str(temp)
+        Temp="Temperature The house has an very high temperature we reccomend to put the AC: "+str(temp)
     if temp >= 34 and temp < 42:
-        Temp = " ALERT: The house has an anormally high temperature mind about a possible fire:"+str(temp)
+        Temp = "Temperature ALERT: The house has an anormally high temperature mind about a possible fire:"+str(temp)
     msg = {"light": Lights}
 
 
 
-    recomendation = ["Prediction consumption"+str(prediction),"Prediction battery"+str(predictionbat),"Temperature"+str(Temp)]
+
+
+
+    recomendation = [(prediction,predictionbat[0:5],Temp,efficience)]
     ms = [msg, recomendation]
+
+    query="""INSERT INTO grafana.recommendations (Id, Name, Price, Purchase_date) 
+                               VALUES 
+                               (%s, %s, %s, %s) """
+    execute_query(cdbconnection, query,recomendation)
+
     return ms
+
+
+
+
+
+
 
 
 mqtt.Client.connected_flag=False#create flag in class
@@ -269,7 +306,7 @@ client.loop_start()
 print("Connecting to broker ",broker)
 client.connect(broker)      #connect to broker
 while not client.connected_flag: #wait in loop
-    msg=obtainpredictions()
+    msg=obtainpredictions() #obtains the predictions with the function above
     print(msg[0])
     print(msg[1])
     client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg[0]) )

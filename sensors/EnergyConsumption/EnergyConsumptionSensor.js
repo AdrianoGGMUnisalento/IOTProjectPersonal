@@ -75,32 +75,7 @@ client.on("error",function(error){
 var minutes=60;
 var date = new Date();
 // =========== this below code is for MySql approach===============//
-var mysql = require('mysql');
-const fs = require("fs");
-var con = mysql.createConnection({
-    host: "mysql-idalab.mysql.database.azure.com",
-    user: "idalabsqluser",
-    password: "QmluZ28uMzIx",
-    port: 3306,
-    database : "grafana",
-    ssl: {ca: fs.readFileSync("../DigiCertGlobalRootCA.crt.pem")}
-})
 
-
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    con.query("CREATE DATABASE IF NOT EXISTS grafana", function (err, result) {
-        if (err) throw err;
-        console.log("Database created or already exists");
-    });
-    var sql = "CREATE TABLE IF NOT EXISTS electricMeter (timestamp  TIMESTAMP, sensor VARCHAR(255), Consumption DECIMAL (5,4))";
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Table created");
-
-    });
-});
 
 // =========== End of code for MySql approach===============//
 
@@ -126,30 +101,6 @@ setInterval(function() {
 
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
     azclient.publish("devices/HouseSmartElectricMeter/messages/events/", data);
-
-
-// =========== this below code is for MySql approach===============//
-
-
-    var myDate =  timestamp;
-    console.log(myDate);
-
-    var sql = "INSERT INTO electricMeter (timestamp,sensor,Consumption ) VALUES (?,?,?)";
-    con.query(sql, [myDate, "HouseSmartElectricMeter" ,consumption], function (err, result) {
-        if (err) throw err;
-        console.log("1 record inserted");
-    });
-
-//======================================================================//
-
-// ============this below code is for mqtt dashboard ==========//
-    var data_grf = JSON.stringify({
-        "Consumption":consumption.toFixed(4) //readout.temperature.toFixed(1)
-    })
-    const regex2 = /"(-?[0-9]+\.{0,1}[0-9]*)"/g
-    data_grf = data_grf.replace(regex2, '$1')
-    console.log(data_grf)
-    client.publish("unisalento/smarthome/raspberry1/grafana/sensor/HouseSmartElectricMeter", data_grf);
     date.setMinutes(date.getMinutes() + minutes);
 // ==================================================================//
 

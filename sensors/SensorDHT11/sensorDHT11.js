@@ -54,40 +54,12 @@ var date = new Date();
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 
-// =========== this below code is for MySql approach===============//
-var mysql = require('mysql');
-const fs = require("fs");
-var con = mysql.createConnection({
-    host: "mysql-idalab.mysql.database.azure.com",
-    user: "idalabsqluser",
-    password: "QmluZ28uMzIx",
-    port: 3306,
-    database : "grafana",
-    ssl: {ca: fs.readFileSync("../DigiCertGlobalRootCA.crt.pem")}
-})
-
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    con.query("CREATE DATABASE IF NOT EXISTS grafana", function (err, result) {
-        if (err) throw err;
-        console.log("Database created or already exists");
-    });
-    var sql = "CREATE TABLE IF NOT EXISTS sensordth11 (timestamp  TIMESTAMP, sensor VARCHAR(255), temperature DECIMAL (3,1))";
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Table created");
-
-    });
-});
-
-// =========== End of code for MySql approach===============//
 
 setInterval(function() {
     //var readout = sensorLib.read();
     var timestamp =  date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
     console.log('timestamp: ',timestamp);
-    tmp=28+ 4 * (getRndInteger(10, 80) / 100) - 4 * (getRndInteger(10, 80) / 100);
+    var tmp=28+ 4 * (getRndInteger(10, 80) / 100) - 4 * (getRndInteger(10, 80) / 100);
     console.log('Temperature:', tmp.toFixed(1) + 'C');
     //console.log('Temperature:', readout.temperature.toFixed(1) + 'C');
     //console.log('Humidity: ', readout.humidity.toFixed(1) + '%');
@@ -97,27 +69,6 @@ setInterval(function() {
         "timestamp": timestamp,
         "temperature":tmp.toFixed(1) //readout.temperature.toFixed(1)
     })
-
-
-// ============this below code is for mqtt dashboard ==========//
-    var data_grf = JSON.stringify({
-        "temperature":tmp.toFixed(1) //readout.temperature.toFixed(1)
-    })
-    const regex2 = /"(-?[0-9]+\.{0,1}[0-9]*)"/g
-    data_grf = data_grf.replace(regex2, '$1')
-    client.publish("unisalento/smarthome/raspberry1/grafana/sensor/temperature", data_grf);
-
-// ==================================================================//
-// =========== this below code is for MySql approach===============//
-
-    var myDate =  timestamp;
-    console.log(myDate);
-
-    var sql = "INSERT INTO sensordth11 (timestamp,sensor,temperature ) VALUES (?,?,?)";
-        con.query(sql, [myDate, "Sensor-1" ,tmp], function (err, result) {
-            if (err) throw err;
-            console.log("1 record inserted");
-        });
 
 //======================================================================//
 
