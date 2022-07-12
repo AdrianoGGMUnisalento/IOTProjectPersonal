@@ -1,0 +1,15 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-Function1",
+      "appliesTo": "Function1.cs",
+      "type": "launch"
+    },
+    {
+      "taskLabel": "task-DigitalTwin",
+      "appliesTo": "/",
+      "type": "launch"
+    }
+  ]
+}
