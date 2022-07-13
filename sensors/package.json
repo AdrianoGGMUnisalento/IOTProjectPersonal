@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "azure-iot-device-mqtt": "^1.16.0",
     "fs": "^0.0.1-security",
     "moment": "^2.29.4",
     "mqtt": "^4.3.7",

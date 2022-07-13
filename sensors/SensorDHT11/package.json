@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "azure-iot-device-mqtt": "^1.16.0",
     "moment": "^2.29.4",
     "mqtt": "^4.3.7",
     "mysql": "^2.18.1"

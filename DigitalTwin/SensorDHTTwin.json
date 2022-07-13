@@ -5,14 +5,14 @@
     "displayName": "DHT11sensor",
     "contents": [
         {
-        "@type": "Telemetry",
+        "@type": "Property",
         "name": "temperature",
         "schema": "double"
         },
         {
         "@type": "Property",
         "name": "timestamp",
-        "schema": "integer"
+        "schema": "string"
         },
         {
             "@type": "Property",
