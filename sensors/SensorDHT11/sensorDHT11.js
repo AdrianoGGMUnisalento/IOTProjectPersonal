@@ -68,7 +68,7 @@ var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
 var username="DemoSmartHome.azure-devices.net/DHT11sensor/?api-version=2021-04-12";
 */
 var client= mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-//var client = mqtt.connect("mqtt://localhost:1883");
+//var client = mqtt.connect("mqtt://20.216.178.106:1883");
 client.on("connect",function(){
     console.log("connected to broker");
 });
