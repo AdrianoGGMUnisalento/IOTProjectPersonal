@@ -1,6 +1,54 @@
 const http = require('http')
 var mqtt=require('mqtt');
 
+
+//======================Added for IoT Hub=======================//
+
+var Client = require('azure-iot-device').Client;
+var Protocol = require('azure-iot-device-mqtt').Mqtt;
+const Message = require('azure-iot-device').Message;
+const deviceConnectionString = 'HostName=DemoSmartHome.azure-devices.net;DeviceId=HouseSmartElectricMeter;SharedAccessKey=p6XrFP6kY2gv49Z025ghBBPdrZyiz5cfJgfiTA4wrJQ='
+let deviceClient = Client.fromConnectionString(deviceConnectionString, Protocol);
+
+
+// Helper function to print results in the console
+
+function printResultFor(op) {
+    return function printResult(err, res) {
+        if (err) console.log(op + ' error: ' + err.toString());
+        if (res) console.log(op + ' status: ' + res.constructor.name);
+    };
+}
+
+function disconnectHandler () {
+    clearInterval(sendInterval);
+    sendInterval = null;
+    deviceClient.open().catch((err) => {
+        console.error(err.message);
+    });
+}
+
+function messageHandler (msg) {
+    console.log('Id: ' + msg.messageId + ' Body: ' + msg.data);
+    deviceClient.complete(msg, printResultFor('completed'));
+}
+function errorHandler (err) {
+    console.error(err.message);
+}
+
+
+//deviceClient.on('connect', connectHandler);
+deviceClient.on('error', errorHandler);
+deviceClient.on('disconnect', disconnectHandler);
+deviceClient.on('message', messageHandler);
+deviceClient.open()
+    .catch(err => {
+        console.error('Could not connect: ' + err.message);
+    });
+
+//========================================================
+
+
 //Time stamp format:  the time stamp format will have 4 numbers year 2 numbers month 2 number day 2 number hour 2minutes 2 seconds  '20220701095604'
 function pad2(n) { return n < 10 ? '0' + n : n }
 //Vector with the hours of the day goes from 0-23
@@ -37,32 +85,15 @@ function SensorEnergyConsumption(EnergyConsumptionoverthedayAverage) {//We pass 
         }
     }
 }
-var HostName="DemoSmartHome.azure-devices.net";
-var DeviceId="HouseSmartElectricMeter";
-var broker="mqtts://DemoSmartHome.azure-devices.net:8883/";
-var sharedacces="SharedAccessSignature sr=DemoSmartHome.azure-devices.net%2Fdevices%2FHouseSmartElectricMeter&sig=1cmQm854TCdKpwPfT8PQ3csoWktnSTEoC%2FkaG%2BHK1iY%3D&se=1659686564";
-var username="DemoSmartHome.azure-devices.net/HouseSmartElectricMeter/?api-version=2021-04-12";
+
 // initialize the request
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs02"});
-//var client = mqtt.connect("mqtt://localhost:1883");
-
-var azclient = mqtt.connect(broker,{clientId:"HouseSmartElectricMeter",protocolId: 'MQTT',
-    keepalive: 10,
-    clean: false,
-    protocolVersion: 4,
-    reconnectPeriod: 1000,
-    connectTimeout: 30 * 1000,
-    rejectUnauthorized: false,
-    username:username,
-    password:sharedacces});
+//var client = mqtt.connect("mqtt://20.216.178.106:1883");
 
 
-azclient.on("connect",function(){
-    console.log("connected to azure");
-});
-azclient.on("error",function(error){
-    console.log("Can't connect to azure"+error);
-});
+
+
+
 client.on("connect",function(){
     console.log("connected to broker");
 });
@@ -74,10 +105,6 @@ client.on("error",function(error){
 //var counter=0;
 var minutes=60;
 var date = new Date();
-// =========== this below code is for MySql approach===============//
-
-
-// =========== End of code for MySql approach===============//
 
 setInterval(function() {
     var readout = new SensorEnergyConsumption(EnergyConsumptionoverthedayAverage);//
@@ -98,9 +125,21 @@ setInterval(function() {
         "timestamp": timestamp,
         "Consumption": consumption.toFixed(4)
     })
+    //======================Added for IoT Hub=======================//
+    var messageBytes = Buffer.from(data, "utf8");
+    var message = new Message(messageBytes);
+    // Encode message body using UTF-8
+    // Set message body type and content encoding
+    message.contentEncoding = "utf-8";
+    message.contentType = "application/json";
+
+    deviceClient.sendEvent(message, (err, res) => {
+        if (err) console.log('error: ' + err.toString());
+        if (res) console.log('status: ' + res.constructor.name);
+    });
+//======================================================================//
 
     client.publish("unisalento/smarthome/HouseSmartElectricMeter", data);
-    azclient.publish("devices/HouseSmartElectricMeter/messages/events/", data);
     date.setMinutes(date.getMinutes() + minutes);
 // ==================================================================//
 

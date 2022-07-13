@@ -81,20 +81,6 @@ var date = new Date();
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 
-// =========== this below code is for MySql approach===============//
-
-
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    con.query("CREATE DATABASE IF NOT EXISTS grafana", function (err, result) {
-        if (err) throw err;
-        console.log("Database created or already exists");
-    });
-
-});
-
-// =========== End of code for MySql approach===============//
 
 setInterval(function() {
     //var readout = sensorLib.read();

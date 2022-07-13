@@ -32,6 +32,29 @@ namespace smartbuildingingestfuntion
                 var client = new DigitalTwinsClient(new Uri(adtInstanceUrl), cred);
 
                 log.LogInformation($"ADT service client connection created.");
+                //==========================================
+                // Create new digital twin
+                // <CreateTwin_withHelper>
+                string twinId = "DHT11sensor";
+                var initData = new BasicDigitalTwin
+                {
+                    Id = twinId,
+                    Metadata = { ModelId = "dtmi:com:example:DHT11sensor;1" },
+                    // Initialize properties
+                    Contents =
+                {
+                    { "temperature", 25.0 },
+                    { "timestamp", "2022-07-21 08:36:32" },
+                    { "sensor", "temperature sensor" },
+                },
+                };
+                //============================================
+                // <CreateTwinCall>
+                await client.CreateOrReplaceDigitalTwinAsync<BasicDigitalTwin>(twinId, initData);
+                // </CreateTwinCall>
+                // </CreateTwin_withHelper>
+                Console.WriteLine("Twin created successfully");
+
 
                 if (eventGridEvent != null && eventGridEvent.Data != null)
                 {
