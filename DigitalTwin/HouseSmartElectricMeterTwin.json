@@ -5,14 +5,14 @@
   "displayName": "HouseSmartElectricMeter",
   "contents": [
     {
-      "@type": "Telemetry",
+      "@type": "Property",
       "name": "Consumption",
       "schema": "double"
     },
     {
       "@type": "Property",
       "name": "timestamp",
-      "schema": "integer"
+      "schema": "string"
     },
     {
       "@type": "Property",

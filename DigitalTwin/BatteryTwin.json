@@ -5,14 +5,14 @@
   "displayName": "Battery",
   "contents": [
     {
-      "@type": "Telemetry",
+      "@type": "Property",
       "name": "BatteryPower",
       "schema": "double"
     },
     {
       "@type": "Property",
       "name": "timestamp",
-      "schema": "integer"
+      "schema": "string"
     },
     {
       "@type": "Property",
@@ -20,7 +20,7 @@
       "schema": "string"
     },
     {
-      "@type": "Telemetry",
+      "@type": "Property",
       "name": "BatteryCharge",
       "schema": "double"
     }

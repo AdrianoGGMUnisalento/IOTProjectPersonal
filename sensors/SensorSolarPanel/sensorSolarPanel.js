@@ -95,11 +95,6 @@ console.log(PowerEfficency.length);
 
 var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
 //var client = mqtt.connect("mqtt://20.216.178.106:1883");
-
-
-
-
-
 client.on("connect",function(){
     console.log("connected to broker");
 });
