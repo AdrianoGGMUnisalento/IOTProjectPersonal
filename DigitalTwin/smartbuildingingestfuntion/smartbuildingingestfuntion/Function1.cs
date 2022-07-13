@@ -63,7 +63,7 @@ namespace smartbuildingingestfuntion
                     updateTwinData.AppendReplace("/timestamp", timestmp.Value<string>());
 
                     //updateTwinData.AppendReplace("/Humidity", humidity.Value<double>());
-                    await client.CreateOrReplaceDigitalTwinAsync(deviceId, updateTwinData);
+                    await client.UpdateDigitalTwinAsync(deviceId, updateTwinData);
                 }
             }
 
