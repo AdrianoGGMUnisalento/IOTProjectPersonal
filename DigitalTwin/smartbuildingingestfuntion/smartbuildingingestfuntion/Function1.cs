@@ -56,7 +56,7 @@ namespace smartbuildingingestfuntion
                     log.LogInformation($"Device:{deviceId} Sensor is:{sensorid}");
                     log.LogInformation($"Device:{deviceId} Temperature is:{temperature}");
 
-                    // Update twin with temperature and humidity fro our raspberry pi>
+                    // Update twin with temperature and humidity from our raspberry pi>
                     var updateTwinData = new JsonPatchDocument();
                     updateTwinData.AppendReplace("/temperature", temperature.Value<double>());
                     updateTwinData.AppendReplace("/sensor", sensorid.Value<string>());
