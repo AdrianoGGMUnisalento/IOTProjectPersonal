@@ -239,7 +239,7 @@ def obtainpredictions():
         op += (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0]) / voltaje  # We are calculating in voltajes
         if op==0 :
             op=0
-        predictionbat.append(op)
+        predictionbat.append(round(op,3))
     print("Expected PredBattery from this hour"+str(predictionbat))
 
 
@@ -247,7 +247,7 @@ def obtainpredictions():
     for i in range(0, 24):
 
         g = (WeatherFactor * dictavgPannels.get(i % 24)[0] - dictavgEmeter.get(i % 24)[0] )/ voltaje  # We are calculating in voltajes
-        prediction.append(g)
+        prediction.append(round(g,3))
     print("Expected Consumption: " + str(prediction))
 
     Lights = "Off"
@@ -283,11 +283,8 @@ def obtainpredictions():
 
 
 
-
-
     recomendation = [(str(prediction),str(predictionbat[0:5]),Temp,efficience)]
 
-    print("EL TAMANO  ES DE :"+str(len(str(prediction))))
     query="""INSERT INTO grafana.recommendations (ConsumptionPrediction,PredictionBatery,Temperaturealert,EfficienceAlert) 
                                VALUES 
                                (%s, %s, %s, %s) """

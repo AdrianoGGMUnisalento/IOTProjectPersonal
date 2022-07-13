@@ -3,7 +3,7 @@ const http = require('http')
 var mqtt=require('mqtt');
 
 //var Gpio = require('onoff').Gpio; //include onoff to interact with the GPIO of RPI
-//var LED = new Gpio(4, 'out'); //use GPIO pin 4 of RPI as output (actuator)
+//var LED = new Gpio(17, 'out'); //use GPIO pin 17 of RPI as output (actuator)
 
 
 /*
