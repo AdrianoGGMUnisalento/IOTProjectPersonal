@@ -68,7 +68,7 @@ client.on("message",function(topic, message, packet){
 
             });
 
-            var sql = "CREATE TABLE IF NOT EXISTS battery (timestamp  TIMESTAMP, sensor VARCHAR(255), BatteryPower DECIMAL (5,1), BatteryCharge DECIMAL (3,1))";
+            var sql = "CREATE TABLE IF NOT EXISTS battery (timestamp  TIMESTAMP, sensor VARCHAR(255), BatteryPower DECIMAL (5,1), BatteryCharge DECIMAL (4,1))";
             con.query(sql, function (err, result) {
                 if (err) throw err;
 

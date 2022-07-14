@@ -201,11 +201,14 @@ def obtainpredictions():
 
     #Because of linear regression wasn't behaving well with hours as variable we decided to create the functions from the average
 
+    # q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery where Id = (SELECT LAST_INSERT_ID()) FROM grafana.battery)"""
+    #q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery where timestamp= (SELECT MAX(timestamp) FROM grafana.battery)"""
+    q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery """
 
-    q3 = """SELECT BatteryPower,HOUR(timestamp) FROM grafana.battery where timestamp= (SELECT MAX(timestamp) FROM grafana.battery)"""
-    results = read_query(cdbconnection, q3)
+
+    resul = read_query(cdbconnection, q3)
+    results=resul[len(resul)-1]
     print("Last battery charge"+str(results))
-
     #We have to give it manually the wheights one important thing should be store the day weather in orther to future modelization
     #So we can obtain the true values of the weather
     WeatherFactor = 0
@@ -231,8 +234,10 @@ def obtainpredictions():
     #SUBSTRACTING THE AVG PANNEL & AVG CONSUMPTION TO WHITH BATTERY TO BATTERY PREDICTION:
     voltaje = 3.6
     maxCAP = 4000
-    hora=int(results[0][1])
-    op = float(results[0][0])
+    hora=int(results[1])
+    op = float(results[0])
+    print(hora)
+    print(op)
     # PREDICTION OF BATTERY STATUS IN THE NEXT 24 HOUR
 
     for i in range(hora, hora + 24):
@@ -251,7 +256,7 @@ def obtainpredictions():
     print("Expected Consumption: " + str(prediction))
 
     Lights = "Off"
-    TurnonTurnoffinterval = [0,23]  # So if the hours are in this interval it will turn on for try purposes we are letting it as 12 23
+    TurnonTurnoffinterval = [12,23]  # So if the hours are in this interval it will turn on for try purposes we are letting it as 12 23
     # if Battery % >20 && TurnonTurnoff Lights ON
     if (predictionbat[4] / maxCAP) > 0.1 and hora >= TurnonTurnoffinterval[0] and hora <= TurnonTurnoffinterval[1]:
         Lights = "On"
@@ -309,7 +314,7 @@ client.connect(broker)      #connect to broker
 while not client.connected_flag: #wait in loop
     msg=obtainpredictions() #obtains the predictions with the function above
     client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg) )
-    time.sleep(60)
+    time.sleep(15)
 print("in Main Loop")
 client.loop_stop()    #Stop loop
 client.disconnect() # disconnect

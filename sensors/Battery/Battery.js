@@ -83,6 +83,10 @@ function Battery(Capacity,initialPowerpercent,MaxPower){
 
         this.Charge = (this.Power / this.Capacity) * 100;
     }
+    this.ChargeBattery=function (){
+        this.Charge=99;
+        this.Power=this.Capacity*0.99;
+    }
 }
 
 
@@ -104,12 +108,16 @@ var date = new Date();
 
 
 
-
 // Automatically update sensor value every 2 seconds
 //we use a nested function (function inside another function)
 setInterval(function() {
     console.log('Power: ',readout.Power.toFixed(1)+ 'A');
     readout.calculateBatteryStatus(date.getHours());
+    if(date.getDate()%3==0 && date.getHours()==0 ){
+        readout.ChargeBattery()
+        console.log('Battery charge restored to 100')
+    }
+
     var Charge=readout.Charge;
     var power=readout.Power;
     var timestamp = date.getFullYear().toString()+"-"+ pad2(date.getMonth() + 1)+"-" + pad2( date.getDate())+" " + pad2( date.getHours() )+":" + pad2( date.getMinutes() )+":" + pad2( date.getSeconds());
