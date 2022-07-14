@@ -305,7 +305,7 @@ def obtainpredictions():
 
 
 mqtt.Client.connected_flag=False#create flag in class
-broker="mqtt.eclipseprojects.io"
+broker="20.216.178.106:1883"
 client = mqtt.Client("mqttjs03")             #create new instance
 client.on_connect=on_connect  #bind call back function
 client.loop_start()

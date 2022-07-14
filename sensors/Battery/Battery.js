@@ -90,8 +90,8 @@ function Battery(Capacity,initialPowerpercent,MaxPower){
 }
 
 
-var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-//var client = mqtt.connect("mqtt://20.216.178.106:1883");
+//var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var client = mqtt.connect("mqtt://20.216.178.106:1883");
 
 
 

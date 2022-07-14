@@ -93,8 +93,8 @@ var PowerEfficency=[0,0,0,0,0,0,0.103333333333333,0.1728,0.35861666666666666,0.7
 console.log(PowerEfficency.length);
 
 
-var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
-//var client = mqtt.connect("mqtt://20.216.178.106:1883");
+//var client = mqtt.connect("mqtt://mqtt.eclipseprojects.io",{clientId:"mqttjs01"});
+var client = mqtt.connect("mqtt://20.216.178.106:1883");
 client.on("connect",function(){
     console.log("connected to broker");
 });
