@@ -279,7 +279,7 @@ def obtainpredictions():
     print("TEMP"+str(results))
     if  temp<12:
         Temp="TemperatureThe house has a cold temperature we suggest to put the heating if you are at home:"+str(temp)
-    if  temp >=34 and temp<42:
+    if  temp >=25 and temp<30:
         Temp="Temperature The house has an very high temperature we reccomend to put the AC: "+str(temp)
     if temp >= 34 and temp < 42:
         Temp = "Temperature ALERT: The house has an anormally high temperature mind about a possible fire:"+str(temp)
@@ -305,12 +305,13 @@ def obtainpredictions():
 
 
 mqtt.Client.connected_flag=False#create flag in class
-broker="20.216.178.106:1883"
-client = mqtt.Client("mqttjs03")             #create new instance
+broker="20.216.178.106"
+port = 1883
+client = mqtt.Client()             #create new instance
 client.on_connect=on_connect  #bind call back function
 client.loop_start()
 print("Connecting to broker ",broker)
-client.connect(broker)      #connect to broker
+client.connect(broker,port)      #connect to broker
 while not client.connected_flag: #wait in loop
     msg=obtainpredictions() #obtains the predictions with the function above
     client.publish("unisalento/smarthome/raspberry1/actuators/leds",json.dumps(msg) )
